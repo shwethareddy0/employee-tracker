@@ -39,3 +39,23 @@ function selectRoles() {
 }
 
 selectRoles();
+
+function selectEmployees() {
+  db.query(
+    `SELECT emp.id,emp.first_name,emp.last_name,title, name as department,salary,CONCAT(mgr.first_name," ",mgr.last_name) as manager FROM employee emp
+LEFT JOIN employee mgr ON emp.manager_id= mgr.id
+INNER JOIN role ON emp.role_id=role.id 
+INNER JOIN department ON role.department_id=department.id`,
+    function (err, res) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("\n");
+        const table = cTable.getTable(res);
+        console.log(table);
+      }
+    }
+  );
+}
+
+selectEmployees();
