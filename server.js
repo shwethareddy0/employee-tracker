@@ -21,8 +21,6 @@ function selectDepartments() {
   });
 }
 
-selectDepartments();
-
 function selectRoles() {
   db.query(
     "SELECT role.id, title, name as department, salary FROM role INNER JOIN department ON role.department_id=department.id",
@@ -37,8 +35,6 @@ function selectRoles() {
     }
   );
 }
-
-selectRoles();
 
 function selectEmployees() {
   db.query(
@@ -58,4 +54,34 @@ INNER JOIN department ON role.department_id=department.id`,
   );
 }
 
-selectEmployees();
+const initialQuestions = [
+  {
+    type: "list",
+    name: "selection",
+    message: "What would you like yo do?",
+    choices: [
+      "View All Employess",
+      "Add Employee",
+      "Update Employee Role",
+      "View All Roles",
+      "Add Role",
+      "View All Departments",
+      "Add Department",
+      "Quit",
+    ],
+  },
+];
+async function init() {
+  do {
+    const mainSelection = await inquirer.prompt(initialQuestions);
+    console.log(mainSelection);
+    if (mainSelection.selection == "View All Employees") {
+      selectEmployees();
+    } else if (mainSelection.selection == "View All Roles") {
+      selectRoles();
+    } else if (mainSelection.selection == "View All Departments") {
+      selectDepartments();
+    } else if (mainSelection.selection == "Quit") break;
+  } while (mainSelection.selection != "Quit");
+}
+init();
