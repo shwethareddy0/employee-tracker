@@ -60,7 +60,7 @@ const initialQuestions = [
     name: "selection",
     message: "What would you like yo do?",
     choices: [
-      "View All Employess",
+      "View All Employees",
       "Add Employee",
       "Update Employee Role",
       "View All Roles",
@@ -71,17 +71,18 @@ const initialQuestions = [
     ],
   },
 ];
+
 async function init() {
   do {
-    const mainSelection = await inquirer.prompt(initialQuestions);
-    console.log(mainSelection);
+    mainSelection = await inquirer.prompt(initialQuestions);
     if (mainSelection.selection == "View All Employees") {
       selectEmployees();
     } else if (mainSelection.selection == "View All Roles") {
       selectRoles();
     } else if (mainSelection.selection == "View All Departments") {
       selectDepartments();
-    } else if (mainSelection.selection == "Quit") break;
+    }
   } while (mainSelection.selection != "Quit");
+  db.end();
 }
 init();
