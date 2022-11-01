@@ -28,3 +28,10 @@ CREATE TABLE employee (
   manager_id INT,
   FOREIGN KEY (manager_id) REFERENCES employee (id)
 );
+
+INSERT INTO department(name)
+VALUES(new.name)
+
+UPDATE employee
+SET title=new title
+WHERE 

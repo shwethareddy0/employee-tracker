@@ -1,58 +1,70 @@
 const inquirer = require("inquirer");
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 const cTable = require("console.table");
 
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "password",
-  database: "employee_db",
-});
+let db = {};
 
-function selectDepartments() {
-  db.query("SELECT * FROM department", function (err, res) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log("\n");
-      const table = cTable.getTable(res);
-      console.log(table);
-    }
+async function dbConnection() {
+  db = await mysql.createConnection({
+    host: "localhost",
+    user: "root",
+    password: "password",
+    database: "employee_db",
   });
 }
 
-function selectRoles() {
-  db.query(
-    "SELECT role.id, title, name as department, salary FROM role INNER JOIN department ON role.department_id=department.id",
-    function (err, res) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log("\n");
-        const table = cTable.getTable(res);
-        console.log(table);
-      }
-    }
-  );
+async function selectDepartments() {
+  await dbConnection();
+  const [rows] = await db.execute("SELECT * FROM department");
+  //function (err, res) {
+  //if (err) {
+  //console.log(err);
+  //} else {
+  console.log("\n");
+  const table = cTable.getTable(rows);
+  console.log(table);
 }
+selectDepartments();
 
-function selectEmployees() {
-  db.query(
+async function selectRoles() {
+  await dbConnection();
+  const [rows] = await db.execute(
+    "SELECT role.id, title, name as department, salary FROM role INNER JOIN department ON role.department_id=department.id"
+  );
+  //function (err, res) {
+  //if (err) {
+  //console.log(err);
+  //} else {
+  console.log("\n");
+  const table = cTable.getTable(rows);
+  console.log(table);
+}
+selectRoles();
+
+async function selectEmployees() {
+  await dbConnection();
+  const [rows] = await db.execute(
     `SELECT emp.id,emp.first_name,emp.last_name,title, name as department,salary,CONCAT(mgr.first_name," ",mgr.last_name) as manager FROM employee emp
 LEFT JOIN employee mgr ON emp.manager_id= mgr.id
 INNER JOIN role ON emp.role_id=role.id 
-INNER JOIN department ON role.department_id=department.id`,
-    function (err, res) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log("\n");
-        const table = cTable.getTable(res);
-        console.log(table);
-      }
-    }
+INNER JOIN department ON role.department_id=department.id`
   );
+  //function (err, res) {
+  //if (err) {
+  // console.log(err);
+  //} else {
+  console.log("\n");
+  const table = cTable.getTable(rows);
+  console.log(table);
 }
+selectEmployees();
+
+async function addDepartment() {
+  await dbConnection();
+  const [rows] = await db.execute(`SELECT COUNT(*) AS Total FROM department`);
+  console.log(rows[0].Total);
+}
+addDepartment();
 
 const initialQuestions = [
   {
