@@ -1,8 +1,6 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql2/promise");
 const cTable = require("console.table");
-var art = require("ascii-art");
-art.font("hello");
 
 let db = {};
 
@@ -17,7 +15,6 @@ async function dbConnection() {
 async function selectDepartments() {
   const [rows] = await db.execute("SELECT * FROM department");
   console.log("\n");
-  console.log("rows.length", rows.length);
   const table = cTable.getTable(rows);
   console.log(table);
 }
@@ -38,6 +35,31 @@ LEFT JOIN employee mgr ON emp.manager_id= mgr.id
 INNER JOIN role ON emp.role_id=role.id 
 INNER JOIN department ON role.department_id=department.id`
   );
+  console.log("\n");
+  const table = cTable.getTable(rows);
+  console.log(table);
+}
+
+async function viewTotalBudgetByDepartment() {
+  const [rows] =
+    await db.execute(`SELECT name AS department, SUM(salary) AS budget
+FROM role,department WHERE role.department_id=department.id GROUP BY role.department_id`);
+  console.log("\n");
+  const table = cTable.getTable(rows);
+  console.log(table);
+}
+async function viewEmployeesByManager() {
+  const [rows] =
+    await db.execute(`SELECT CONCAT(mgr.first_name,' ',mgr.last_name) AS manager, CONCAT(emp.first_name,' ',emp.last_name) AS employee
+  FROM employee emp ,employee mgr WHERE emp.manager_id=mgr.id ORDER BY mgr.id`);
+  console.log("\n");
+  const table = cTable.getTable(rows);
+  console.log(table);
+}
+async function viewEmployeesByDepartment() {
+  const [rows] =
+    await db.execute(`SELECT name AS department, CONCAT(first_name,' ',last_name) AS employee
+  FROM department,employee,role WHERE employee.role_id=role.id AND role.department_id=department.id ORDER BY department.id`);
   console.log("\n");
   const table = cTable.getTable(rows);
   console.log(table);
@@ -211,6 +233,9 @@ const initialQuestions = [
       "Add Role",
       "View All Departments",
       "Add Department",
+      "View employees by manager",
+      "View employees by department",
+      "View the total utilized budget of a department",
       "Quit",
     ],
   },
@@ -236,6 +261,15 @@ async function init() {
       await addEmployee();
     } else if (mainSelection.selection == "Update Employee Role") {
       await updateEmployeeRole();
+    } else if (mainSelection.selection == "View employees by manager") {
+      await viewEmployeesByManager();
+    } else if (mainSelection.selection == "View employees by department") {
+      await viewEmployeesByDepartment();
+    } else if (
+      mainSelection.selection ==
+      "View the total utilized budget of a department"
+    ) {
+      await viewTotalBudgetByDepartment();
     }
   } while (mainSelection.selection != "Quit");
   db.end();

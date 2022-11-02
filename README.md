@@ -2,18 +2,16 @@
 
 ## Description
 
-Employee Tracker is a command-line application that manages employees database using Node.js, Inquiree and MYSQL.
-takes in information about employees on a software engineering team and generates an HTML webpage that displays summaries for each person.
+Employee Tracker is a command-line application that manages employees database using Node.js, Inquirer and MySQL.
 
 This application uses the MySQL2 package to connect to the MySQL database and perform queries, the Inquirer package to interact with the user via the command line, and the console.table package to print MySQL rows to the console.
 
-Here is a walkthrough [video]() demonstrating the functionality of the application.
+Here is a walkthrough [video](https://drive.google.com/file/d/1wfGhfiuCLSTRUJlbZK6WPWktvV8ZWUKZ/view) demonstrating the functionality of the application.
 
 ### Features
 
 - Easy to modify
 - Provides choices to view and add more employees,roles, managers and departments and also updates roles.
-- Generates a responsive webpage
 
 ## Table of Contents
 
@@ -28,7 +26,6 @@ Here is a walkthrough [video]() demonstrating the functionality of the applicati
 - Create a new repository on your GitHub account.
 - Clone this repository.
 - Run `npm i`
-- Run `npm run test`
 - Run `node server.js`
 
 ## Usage
@@ -60,13 +57,19 @@ async function init() {
       await addEmployee();
     } else if (mainSelection.selection == "Update Employee Role") {
       await updateEmployeeRole();
+    } else if (mainSelection.selection == "View employees by manager") {
+      await viewEmployeesByManager();
+    } else if (mainSelection.selection == "View employees by department") {
+      await viewEmployeesByDepartment();
+    } else if (
+      mainSelection.selection ==
+      "View the total utilized budget of a department"
+    ) {
+      await viewTotalBudgetByDepartment();
     }
   } while (mainSelection.selection != "Quit");
   db.end();
 }
-
-init();
-
 
 ```
 
