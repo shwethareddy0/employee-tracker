@@ -95,6 +95,68 @@ async function addRole() {
   );
   console.log(`Added ${newRole.title} to the database`);
 }
+
+async function addEmployee() {
+  //const listOfDepartments = await db.execute(`SELECT id,name FROM department`);
+  //const listOfDepartmentNames = listOfDepartments[0].map((e) => e.name);
+
+  const listOfRoles = await db.execute(`SELECT id,title FROM role`);
+  const listOfRoleNames = listOfRoles[0].map((e) => e.title);
+
+  const listOfManagers = await db.execute(
+    `SELECT id, first_name, last_name FROM employee`
+  );
+  const listOfManagerNames = listOfManagers[0].map(
+    (e) => `${e.first_name} ${e.last_name}`
+  );
+  listOfManagerNames.push("None");
+
+  const employeeQuestions = [
+    {
+      type: "input",
+      name: "first_name",
+      message: "What is the employee's first name?",
+    },
+    {
+      type: "input",
+      name: "last_name",
+      message: "What is the employee's last name?",
+    },
+    {
+      type: "list",
+      name: "roleName",
+      message: "What is the employee's role?",
+      choices: listOfRoleNames,
+    },
+    {
+      type: "list",
+      name: "managerName",
+      message: "Who is the employee's manager?",
+      choices: listOfManagerNames,
+    },
+  ];
+
+  const newEmployee = await inquirer.prompt(employeeQuestions);
+  const [rows] = await db.execute(`SELECT COUNT(*) AS Total FROM employee`);
+  const totalRows = rows[0].Total;
+  const selectedRoleId = listOfRoles[0].find(
+    (e) => e.title == newEmployee.roleName
+  ).id;
+  const selectedManagerId = listOfManagers[0].find(
+    (e) => `${e.first_name} ${e.last_name}` == newEmployee.managerName
+  ).id;
+  await db.execute(
+    `INSERT INTO employee (id, first_name, last_name, role_id, manager_id) VALUES (${
+      totalRows + 1
+    },"${newEmployee.first_name}","${
+      newEmployee.last_name
+    }", "${selectedRoleId}", "${selectedManagerId}")`
+  );
+  console.log(
+    `Added ${newEmployee.first_name} ${newEmployee.last_name} to the database`
+  );
+}
+
 const initialQuestions = [
   {
     type: "list",
