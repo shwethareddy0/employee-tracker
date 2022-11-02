@@ -97,9 +97,6 @@ async function addRole() {
 }
 
 async function addEmployee() {
-  //const listOfDepartments = await db.execute(`SELECT id,name FROM department`);
-  //const listOfDepartmentNames = listOfDepartments[0].map((e) => e.name);
-
   const listOfRoles = await db.execute(`SELECT id,title FROM role`);
   const listOfRoleNames = listOfRoles[0].map((e) => e.title);
 
@@ -155,6 +152,48 @@ async function addEmployee() {
   console.log(
     `Added ${newEmployee.first_name} ${newEmployee.last_name} to the database`
   );
+}
+
+async function updateEmployeeRole() {
+  const listOfRoles = await db.execute(`SELECT id,title FROM role`);
+  const listOfRoleNames = listOfRoles[0].map((e) => e.title);
+
+  const listOfEmployees = await db.execute(
+    `SELECT id, CONCAT(first_name," ",last_name) AS name FROM employee`
+  );
+  const listOfEmployeeNames = listOfEmployees[0].map((e) => e.name);
+  //listOfManagerNames.push("None");
+
+  const updateEmployeeRoleQuestions = [
+    {
+      type: "list",
+      name: "empName",
+      message: "Which employee's role do you want to update?",
+      choices: listOfEmployeeNames,
+    },
+    {
+      type: "list",
+      name: "roleName",
+      message: "Which role do you want to assign the selected employee?",
+      choices: listOfRoleNames,
+    },
+  ];
+
+  const newEmployeeRole = await inquirer.prompt(updateEmployeeRoleQuestions);
+
+  const totalRows = listOfEmployeeNames.length;
+
+  const selectedRoleId = listOfRoles[0].find(
+    (e) => e.title == newEmployeeRole.roleName
+  ).id;
+  const selectedEmployeeId = listOfEmployees[0].find(
+    (e) => e.name == newEmployeeRole.empName
+  ).id;
+  await db.execute(
+    `UPDATE employee SET role_id=${selectedRoleId} WHERE id=${selectedEmployeeId}`
+  );
+
+  console.log(`Updated employees's role`);
 }
 
 const initialQuestions = [
