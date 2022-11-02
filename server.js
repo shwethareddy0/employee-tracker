@@ -1,9 +1,10 @@
+//Import require packages
 const inquirer = require("inquirer");
 const mysql = require("mysql2/promise");
 const cTable = require("console.table");
 
 let db = {};
-
+// Create a database connection
 async function dbConnection() {
   db = await mysql.createConnection({
     host: "localhost",
@@ -12,6 +13,8 @@ async function dbConnection() {
     database: "employee_db",
   });
 }
+
+// Function to view all departments
 async function selectDepartments() {
   const [rows] = await db.execute("SELECT * FROM department");
   console.log("\n");
@@ -19,6 +22,7 @@ async function selectDepartments() {
   console.log(table);
 }
 
+// Function to view all roles
 async function selectRoles() {
   const [rows] = await db.execute(
     "SELECT role.id, title, name as department, salary FROM role INNER JOIN department ON role.department_id=department.id"
@@ -28,6 +32,7 @@ async function selectRoles() {
   console.log(table);
 }
 
+// Function to view all employees
 async function selectEmployees() {
   const [rows] = await db.execute(
     `SELECT emp.id,emp.first_name,emp.last_name,title, name as department,salary,CONCAT(mgr.first_name," ",mgr.last_name) as manager FROM employee emp
@@ -40,6 +45,7 @@ INNER JOIN department ON role.department_id=department.id`
   console.log(table);
 }
 
+// Function to view the total budget by all departments
 async function viewTotalBudgetByDepartment() {
   const [rows] =
     await db.execute(`SELECT name AS department, SUM(salary) AS budget
@@ -48,6 +54,8 @@ FROM role,department WHERE role.department_id=department.id GROUP BY role.depart
   const table = cTable.getTable(rows);
   console.log(table);
 }
+
+// Function to view employees by their managers
 async function viewEmployeesByManager() {
   const [rows] =
     await db.execute(`SELECT CONCAT(mgr.first_name,' ',mgr.last_name) AS manager, CONCAT(emp.first_name,' ',emp.last_name) AS employee
@@ -56,6 +64,8 @@ async function viewEmployeesByManager() {
   const table = cTable.getTable(rows);
   console.log(table);
 }
+
+// Function to view the employees by departments
 async function viewEmployeesByDepartment() {
   const [rows] =
     await db.execute(`SELECT name AS department, CONCAT(first_name,' ',last_name) AS employee
@@ -65,6 +75,7 @@ async function viewEmployeesByDepartment() {
   console.log(table);
 }
 
+// Function to add a department
 async function addDepartment() {
   const deptQuestions = [
     {
@@ -84,6 +95,7 @@ async function addDepartment() {
   console.log(`Added ${newDepartmentName.deptName} to the database`);
 }
 
+// Function to add a role
 async function addRole() {
   const listOfDepartments = await db.execute(`SELECT id,name FROM department`);
   const listOfDepartmentNames = listOfDepartments[0].map((e) => e.name);
@@ -105,7 +117,6 @@ async function addRole() {
       choices: listOfDepartmentNames,
     },
   ];
-
   const newRole = await inquirer.prompt(roleQuestions);
   const [rows] = await db.execute(`SELECT COUNT(*) AS Total FROM role`);
   const totalRows = rows[0].Total;
@@ -120,18 +131,18 @@ async function addRole() {
   console.log(`Added ${newRole.title} to the database`);
 }
 
+// Function to add an employee
 async function addEmployee() {
   const listOfRoles = await db.execute(`SELECT id,title FROM role`);
   const listOfRoleNames = listOfRoles[0].map((e) => e.title);
-
   const listOfManagers = await db.execute(
     `SELECT id, first_name, last_name FROM employee`
   );
   const listOfManagerNames = listOfManagers[0].map(
     (e) => `${e.first_name} ${e.last_name}`
   );
+  //Add none to the list to the managers list
   listOfManagerNames.push("None");
-
   const employeeQuestions = [
     {
       type: "input",
@@ -156,7 +167,6 @@ async function addEmployee() {
       choices: listOfManagerNames,
     },
   ];
-
   const newEmployee = await inquirer.prompt(employeeQuestions);
   const [rows] = await db.execute(`SELECT COUNT(*) AS Total FROM employee`);
   const totalRows = rows[0].Total;
@@ -178,6 +188,7 @@ async function addEmployee() {
   );
 }
 
+// Function to update the employee role
 async function updateEmployeeRole() {
   const listOfRoles = await db.execute(`SELECT id,title FROM role`);
   const listOfRoleNames = listOfRoles[0].map((e) => e.title);
@@ -204,9 +215,7 @@ async function updateEmployeeRole() {
   ];
 
   const newEmployeeRole = await inquirer.prompt(updateEmployeeRoleQuestions);
-
   const totalRows = listOfEmployeeNames.length;
-
   const selectedRoleId = listOfRoles[0].find(
     (e) => e.title == newEmployeeRole.roleName
   ).id;
@@ -216,10 +225,9 @@ async function updateEmployeeRole() {
   await db.execute(
     `UPDATE employee SET role_id=${selectedRoleId} WHERE id=${selectedEmployeeId}`
   );
-
   console.log(`Updated employees's role`);
 }
-
+// Main selection menu
 const initialQuestions = [
   {
     type: "list",
@@ -242,6 +250,7 @@ const initialQuestions = [
 ];
 
 let mainSelection;
+//Prompt questions to the user for section
 async function init() {
   await dbConnection();
   console.log("\n");
