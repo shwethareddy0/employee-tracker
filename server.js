@@ -42,12 +42,22 @@ INNER JOIN department ON role.department_id=department.id`
 }
 
 async function addDepartment() {
-  await dbConnection();
+  const deptQuestions = [
+    {
+      type: "input",
+      name: "deptName",
+      message: "What is the name of the department?",
+    },
+  ];
+  const newDepartmentName = await inquirer.prompt(deptQuestions);
   const [rows] = await db.execute(`SELECT COUNT(*) AS Total FROM department`);
-  console.log(rows[0].Total);
+  const totalRows = rows[0].Total;
+  await db.execute(
+    `INSERT INTO department (id,name) VALUES (${totalRows + 1},"${
+      newDepartmentName.deptName
+    }")`
+  );
 }
-
-//addDepartment();
 
 const initialQuestions = [
   {
@@ -70,7 +80,7 @@ const initialQuestions = [
 let mainSelection;
 async function init() {
   await dbConnection();
-  console / log("\n");
+  console.log("\n");
   do {
     mainSelection = await inquirer.prompt(initialQuestions);
     if (mainSelection.selection == "View All Employees") {
