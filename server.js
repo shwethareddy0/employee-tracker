@@ -57,8 +57,44 @@ async function addDepartment() {
       newDepartmentName.deptName
     }")`
   );
+  console.log(`Added ${newDepartmentName.deptName} to the database`);
 }
 
+async function addRole() {
+  const listOfDepartments = await db.execute(`SELECT id,name FROM department`);
+  const listOfDepartmentNames = listOfDepartments[0].map((e) => e.name);
+  const roleQuestions = [
+    {
+      type: "input",
+      name: "title",
+      message: "What is the name of the role?",
+    },
+    {
+      type: "input",
+      name: "salary",
+      message: "What is the salary of the role?",
+    },
+    {
+      type: "list",
+      name: "deptName",
+      message: "Which department does the role belong to?",
+      choices: listOfDepartmentNames,
+    },
+  ];
+
+  const newRole = await inquirer.prompt(roleQuestions);
+  const [rows] = await db.execute(`SELECT COUNT(*) AS Total FROM role`);
+  const totalRows = rows[0].Total;
+  const selectedDepartmentId = listOfDepartments[0].find(
+    (e) => e.name == newRole.deptName
+  ).id;
+  await db.execute(
+    `INSERT INTO role (id,title,salary,department_id) VALUES (${
+      totalRows + 1
+    },"${newRole.title}",${newRole.salary},${selectedDepartmentId})`
+  );
+  console.log(`Added ${newRole.title} to the database`);
+}
 const initialQuestions = [
   {
     type: "list",
